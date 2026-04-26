@@ -30,8 +30,9 @@ const jdInputRef = useRef<HTMLInputElement>(null);
 
   const API_BASE = "https://skillsense-ai-63zl.onrender.com";
 
-const handleAnalyze = async () => {
-  setLoading(true);
+const handleAnalyze = async (e: any) => {
+  e.preventDefault();   // 🔥 CRITICAL
+  e.stopPropagation();  // 🔥 EXTRA SAFETY
 
   const makeRequest = async () => {
     if (resumeFile && jdFile) {
@@ -269,8 +270,8 @@ const handleAnalyze = async () => {
 </div>
 
   <button
-  type="button"   // ✅ ADD THIS LINE
-  onClick={handleAnalyze}
+  type="button"   
+  onClick={(e) => handleAnalyze(e)}
   className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl w-full font-semibold text-lg shadow-md hover:scale-[1.02] transition-transform"
 >
   {loading ? "Analyzing..." : "Analyze Skills"}
