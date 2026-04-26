@@ -32,15 +32,9 @@ print("OPENROUTER KEY:", os.getenv("OPENROUTER_API_KEY"))
 # ----------- CLIENT -----------
 
 client = OpenAI(
-    api_key=os.getenv("OPENROUTER_API_KEY"),
-    base_url="https://openrouter.ai/api/v1",
-    default_headers={
-        "HTTP-Referer": "https://skillsense-ai-eta.vercel.app",
-        "X-Title": "SkillSense AI"
-    }
+    api_key="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"
 )
-
-MODEL = "mistralai/mixtral-8x7b-instruct"
+MODEL = "gpt-3.5-turbo"
 
 # ----------- APP -----------
 
