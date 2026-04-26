@@ -23,11 +23,7 @@ app.add_middleware(
 
 @app.get("/")
 def root():
-    return {"message": "running"}
-
-@app.get("/test")
-def test():
-    return {"status": "working"}
+    return {"message": "Backend running"}
 # ----------- LOAD ENV -----------
 
 load_dotenv()
