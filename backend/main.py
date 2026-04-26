@@ -33,7 +33,11 @@ print("OPENROUTER KEY:", os.getenv("OPENROUTER_API_KEY"))
 
 client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
-    base_url="https://openrouter.ai/api/v1"
+    base_url="https://openrouter.ai/api/v1",
+    default_headers={
+        "HTTP-Referer": "https://skillsense-ai-eta.vercel.app",
+        "X-Title": "SkillSense AI"
+    }
 )
 
 MODEL = "mistralai/mixtral-8x7b-instruct"
