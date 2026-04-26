@@ -51,20 +51,22 @@ const handleAnalyze = async () => {
 
   try {
     let res = await makeRequest();
+    console.log("FULL RESPONSE:", res.data);
 
     // ✅ CRITICAL FIX: always ensure arrays (prevents .map crash)
     setResult({
-      matched_skills: Array.isArray(res.data?.matched_skills)
-        ? res.data.matched_skills
-        : Array.isArray(res.data?.matched)
-        ? res.data.matched
-        : [],
-      skill_gaps: Array.isArray(res.data?.skill_gaps)
-        ? res.data.skill_gaps
-        : Array.isArray(res.data?.gaps)
-        ? res.data.gaps
-        : [],
-    });
+  matched_skills:
+    res.data?.matched_skills ||
+    res.data?.matched ||
+    res.data?.matchedSkills ||
+    [],
+    
+  skill_gaps:
+    res.data?.skill_gaps ||
+    res.data?.gaps ||
+    res.data?.missing ||
+    [],
+});
 
   } catch (error: any) {
     console.log("First attempt failed:", error);
