@@ -28,41 +28,68 @@ const jdInputRef = useRef<HTMLInputElement>(null);
   const [learningPlan, setLearningPlan] = useState("");
   const [loadingPlan, setLoadingPlan] = useState(false);
 
-  // ✅ UPDATED (auto-detect text vs pdf)
-  const handleAnalyze = async () => {
-    setLoading(true);
+  const API_BASE = "https://skillsense-ai-63zl.onrender.com";
+
+const handleAnalyze = async () => {
+  setLoading(true);
+
+  const makeRequest = async () => {
+    if (resumeFile && jdFile) {
+      const formData = new FormData();
+      formData.append("resume", resumeFile);
+      formData.append("job_description", jdFile);
+
+      return axios.post(`${API_BASE}/analyze-pdf`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    } else {
+      return axios.post(`${API_BASE}/analyze`, {
+        resume: resume || "",
+        job_description: jd || "",
+      });
+    }
+  };
+
+  try {
+    // 🔥 FIRST TRY
+    let res = await makeRequest();
+    setResult(res.data);
+
+  } catch (error: any) {
+    console.log("First attempt failed:", error);
+
+    // 🔥 RETRY (handles Render cold start)
     try {
-      let res;
-
-      if (resumeFile && jdFile) {
-        const formData = new FormData();
-        formData.append("resume", resumeFile);
-        formData.append("job_description", jdFile);
-
-        res = await axios.post(
-          "https://skillsense-ai-63zl.onrender.com/analyze-pdf",
-          formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
-        );
-      } else {
-        res = await axios.post("https://skillsense-ai-63zl.onrender.com/analyze", {
-          resume,
-          job_description: jd,
-        });
-      }
-
+      await new Promise((resolve) => setTimeout(resolve, 4000)); // wait 4 sec
+      let res = await makeRequest();
       setResult(res.data);
 
-      setTimeout(() => {
-        document
-          .getElementById("results")
-          ?.scrollIntoView({ behavior: "smooth" });
-      }, 200);
-    } catch {
-      alert("Backend not connected or missing input");
+    } catch (error2: any) {
+      console.log("Second attempt failed:", error2);
+
+      // 🔥 REAL ERROR MESSAGE
+      if (error2.response) {
+        alert(
+          "Backend error: " +
+          (error2.response.data?.detail || "Check backend logs")
+        );
+      } else {
+        alert(
+          "Server is waking up (free hosting). Please wait 20–30 seconds and click Analyze again."
+        );
+      }
     }
-    setLoading(false);
-  };
+  }
+
+  // 🔥 SCROLL AFTER SUCCESS
+  setTimeout(() => {
+    document
+      .getElementById("results")
+      ?.scrollIntoView({ behavior: "smooth" });
+  }, 200);
+
+  setLoading(false);
+};
 
   const handleAsk = async (skill: string) => {
     setCurrentSkill(skill);
