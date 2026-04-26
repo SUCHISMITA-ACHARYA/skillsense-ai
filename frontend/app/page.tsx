@@ -40,12 +40,12 @@ const jdInputRef = useRef<HTMLInputElement>(null);
         formData.append("job_description", jdFile);
 
         res = await axios.post(
-          "https://skillsense-ai-backend.onrender.com/analyze-pdf",
+          "https://skillsense-ai-63zl.onrender.com/analyze-pdf",
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
       } else {
-        res = await axios.post("https://skillsense-ai-backend.onrender.com/analyze", {
+        res = await axios.post("https://skillsense-ai-63zl.onrender.com/analyze", {
           resume,
           job_description: jd,
         });
@@ -70,7 +70,7 @@ const jdInputRef = useRef<HTMLInputElement>(null);
     setAnswer("");
 
     try {
-      const res = await axios.post("https://skillsense-ai-backend.onrender.com/ask", {
+      const res = await axios.post("https://skillsense-ai-63zl.onrender.com/ask", {
         skill,
       });
       setQuestion(res.data.question);
@@ -81,7 +81,7 @@ const jdInputRef = useRef<HTMLInputElement>(null);
 
   const handleEvaluate = async () => {
     try {
-      const res = await axios.post("https://skillsense-ai-backend.onrender.com/evaluate", {
+      const res = await axios.post("https://skillsense-ai-63zl.onrender.com/evaluate", {
         skill: currentSkill,
         answer,
       });
@@ -95,7 +95,7 @@ const jdInputRef = useRef<HTMLInputElement>(null);
   setLoadingPlan(true);
   try {
     const res = await axios.post(
-      "https://skillsense-ai-backend.onrender.com/learning-plan",
+      "https://skillsense-ai-63zl.onrender.com/learning-plan",
       {
         skills: result.skill_gaps,
       }
