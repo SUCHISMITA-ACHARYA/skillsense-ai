@@ -26,13 +26,14 @@ def root():
     return {"message": "Backend running"}
 # ----------- LOAD ENV -----------
 
-load_dotenv()
-print("OPENROUTER KEY:", os.getenv("OPENROUTER_API_KEY"))
+
 
 # ----------- CLIENT -----------
 
+import os
+
 client = OpenAI(
-    api_key="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"
+    api_key=os.getenv("OPENAI_API_KEY")
 )
 MODEL = "gpt-3.5-turbo"
 
