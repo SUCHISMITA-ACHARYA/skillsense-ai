@@ -27,9 +27,14 @@ MODEL = "mistralai/mixtral-8x7b-instruct"
 
 app = FastAPI()
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://skillsense-ai-eta.vercel.app",  # your frontend URL
+        "http://localhost:3000",                 # for local testing
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
