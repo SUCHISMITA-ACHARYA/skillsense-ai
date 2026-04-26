@@ -1,14 +1,33 @@
-from fastapi import FastAPI
+
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
 import json
 import re
-from fastapi.middleware.cors import CORSMiddleware
+
 import pdfplumber
 from fastapi import UploadFile, File
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/")
+def root():
+    return {"message": "running"}
+
+@app.get("/test")
+def test():
+    return {"status": "working"}
 # ----------- LOAD ENV -----------
 
 load_dotenv()
@@ -25,21 +44,9 @@ MODEL = "mistralai/mixtral-8x7b-instruct"
 
 # ----------- APP -----------
 
-app = FastAPI()
 
-from fastapi.middleware.cors import CORSMiddleware
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # ✅ TEMP: allow all to debug
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
-@app.get("/test")
-def test():
-    return {"status": "working"}
 # ----------- MODELS -----------
 
 class InputData(BaseModel):
@@ -134,9 +141,7 @@ def smart_match(required, candidate):
     gaps = required_set - matched
 
     return sorted(matched), sorted(gaps)
-@app.get("/")
-def root():
-    return {"message": "SkillSense AI Running 🚀"}
+
 
 # ----------- ANALYZE -----------
 
