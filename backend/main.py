@@ -66,28 +66,11 @@ def extract_json(text):
     return match.group(0) if match else text
 
 def generate(prompt):
-    response = requests.post(
-        "https://openrouter.ai/api/v1/chat/completions",
-        headers={
-            "Authorization": f"Bearer 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",
-            "HTTP-Referer": "https://skillsense-ai-eta.vercel.app",
-            "X-Title": "SkillSense AI"
-        },
-        json={
-            "model": MODEL,
-            "messages": [
-                {"role": "user", "content": prompt}
-            ]
-        }
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=[{"role": "user", "content": prompt}]
     )
-
-    data = response.json()
-
-    if "error" in data:
-        raise Exception(data["error"]["message"])
-
-    return extract_json(data["choices"][0]["message"]["content"])
-
+    return extract_json(response.choices[0].message.content)
 # ----------- FALLBACK SKILLS -----------
 
 COMMON_SKILLS = [
