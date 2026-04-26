@@ -54,19 +54,35 @@ const handleAnalyze = async () => {
     console.log("FULL RESPONSE:", res.data);
 
     // ✅ CRITICAL FIX: always ensure arrays (prevents .map crash)
-    setResult({
-  matched_skills:
-    res.data?.matched_skills ||
-    res.data?.matched ||
-    res.data?.matchedSkills ||
-    [],
-    
-  skill_gaps:
-    res.data?.skill_gaps ||
-    res.data?.gaps ||
-    res.data?.missing ||
-    [],
-});
+    const extractSkills = (text: string, label: string) => {
+  const regex = new RegExp(label + "[:\\s]*([^\\n]+)", "i");
+  const match = text.match(regex);
+  if (!match) return [];
+  return match[1]
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+};
+
+const data = res.data;
+
+// ✅ CASE 1: backend sends arrays
+if (data?.matched_skills || data?.matched || data?.gaps) {
+  setResult({
+    matched_skills: data.matched_skills || data.matched || [],
+    skill_gaps: data.skill_gaps || data.gaps || [],
+  });
+}
+
+// ✅ CASE 2: backend sends TEXT (THIS IS YOUR CASE)
+else {
+  const text = typeof data === "string" ? data : data?.analysis || "";
+
+  setResult({
+    matched_skills: extractSkills(text, "Matched Skills"),
+    skill_gaps: extractSkills(text, "Skill Gaps"),
+  });
+}
 
   } catch (error: any) {
     console.log("First attempt failed:", error);
