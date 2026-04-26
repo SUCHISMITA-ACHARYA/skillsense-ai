@@ -269,11 +269,12 @@ const handleAnalyze = async () => {
 </div>
 
   <button
-    onClick={handleAnalyze}
-    className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl w-full font-semibold text-lg shadow-md hover:scale-[1.02] transition-transform"
-  >
-    {loading ? "Analyzing..." : "Analyze Skills"}
-  </button>
+  type="button"   // ✅ ADD THIS LINE
+  onClick={handleAnalyze}
+  className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl w-full font-semibold text-lg shadow-md hover:scale-[1.02] transition-transform"
+>
+  {loading ? "Analyzing..." : "Analyze Skills"}
+</button>
 
 </div>
 
