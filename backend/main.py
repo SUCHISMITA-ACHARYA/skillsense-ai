@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 import json
 import re
-
+import requests
 import pdfplumber
 from fastapi import UploadFile, File
 from fastapi import FastAPI
@@ -72,11 +72,27 @@ def extract_json(text):
     return match.group(0) if match else text
 
 def generate(prompt):
-    response = client.chat.completions.create(
-        model=MODEL,
-        messages=[{"role": "user", "content": prompt}]
+    response = requests.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
+            "HTTP-Referer": "https://skillsense-ai-eta.vercel.app",
+            "X-Title": "SkillSense AI"
+        },
+        json={
+            "model": MODEL,
+            "messages": [
+                {"role": "user", "content": prompt}
+            ]
+        }
     )
-    return extract_json(response.choices[0].message.content)
+
+    data = response.json()
+
+    if "error" in data:
+        raise Exception(data["error"]["message"])
+
+    return extract_json(data["choices"][0]["message"]["content"])
 
 # ----------- FALLBACK SKILLS -----------
 
