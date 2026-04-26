@@ -50,75 +50,30 @@ const handleAnalyze = async () => {
   };
 
   try {
-    let res = await makeRequest();
-    console.log("FULL RESPONSE:", res.data);
+    const res = await makeRequest();
+    const data = res.data;
 
-    // ✅ CRITICAL FIX: always ensure arrays (prevents .map crash)
-    const extractSkills = (text: string, label: string) => {
-  const regex = new RegExp(label + "[:\\s]*([^\\n]+)", "i");
-  const match = text.match(regex);
-  if (!match) return [];
-  return match[1]
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-};
+    console.log("FULL RESPONSE:", data);
 
-const data = res.data;
+    // 🚨 HANDLE BACKEND ERROR
+    if (data?.status === "error") {
+      alert("Backend Error: " + data.message);
+      setResult({
+        matched_skills: [],
+        skill_gaps: [],
+      });
+      return;
+    }
 
-// ✅ CASE 1: backend sends arrays
-if (data?.matched_skills || data?.matched || data?.gaps) {
-  setResult({
-    matched_skills: data.matched_skills || data.matched || [],
-    skill_gaps: data.skill_gaps || data.gaps || [],
-  });
-}
-
-// ✅ CASE 2: backend sends TEXT (THIS IS YOUR CASE)
-else {
-  const text = typeof data === "string" ? data : data?.analysis || "";
-
-  setResult({
-    matched_skills: extractSkills(text, "Matched Skills"),
-    skill_gaps: extractSkills(text, "Skill Gaps"),
-  });
-}
+    // ✅ SUCCESS CASE
+    setResult({
+      matched_skills: data?.matched_skills || [],
+      skill_gaps: data?.skill_gaps || [],
+    });
 
   } catch (error: any) {
-    console.log("First attempt failed:", error);
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 4000));
-      let res = await makeRequest();
-
-      // ✅ SAME SAFE HANDLING ON RETRY
-      setResult({
-        matched_skills: Array.isArray(res.data?.matched_skills)
-          ? res.data.matched_skills
-          : Array.isArray(res.data?.matched)
-          ? res.data.matched
-          : [],
-        skill_gaps: Array.isArray(res.data?.skill_gaps)
-          ? res.data.skill_gaps
-          : Array.isArray(res.data?.gaps)
-          ? res.data.gaps
-          : [],
-      });
-
-    } catch (error2: any) {
-      console.log("Second attempt failed:", error2);
-
-      if (error2.response) {
-        alert(
-          "Backend error: " +
-            (error2.response.data?.detail || "Check backend logs")
-        );
-      } else {
-        alert(
-          "Server waking up... wait 20–30 sec and try again"
-        );
-      }
-    }
+    console.log("Error:", error);
+    alert("Something went wrong. Try again.");
   }
 
   setTimeout(() => {
