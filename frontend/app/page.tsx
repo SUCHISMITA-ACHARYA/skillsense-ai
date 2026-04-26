@@ -29,10 +29,8 @@ const jdInputRef = useRef<HTMLInputElement>(null);
   const [loadingPlan, setLoadingPlan] = useState(false);
 
   const API_BASE = "https://skillsense-ai-63zl.onrender.com";
-
-const handleAnalyze = async (e: any) => {
-  e.preventDefault();   // 🔥 CRITICAL
-  e.stopPropagation();  // 🔥 EXTRA SAFETY
+const handleAnalyze = async () => {
+  setLoading(true);
 
   const makeRequest = async () => {
     if (resumeFile && jdFile) {
@@ -52,42 +50,59 @@ const handleAnalyze = async (e: any) => {
   };
 
   try {
-    // 🔥 FIRST TRY
     let res = await makeRequest();
-    setResult(res.data);
+
+    // ✅ CRITICAL FIX: always ensure arrays (prevents .map crash)
+    setResult({
+      matched_skills: Array.isArray(res.data?.matched_skills)
+        ? res.data.matched_skills
+        : Array.isArray(res.data?.matched)
+        ? res.data.matched
+        : [],
+      skill_gaps: Array.isArray(res.data?.skill_gaps)
+        ? res.data.skill_gaps
+        : Array.isArray(res.data?.gaps)
+        ? res.data.gaps
+        : [],
+    });
 
   } catch (error: any) {
     console.log("First attempt failed:", error);
 
-    // 🔥 RETRY (handles Render cold start)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 4000)); // wait 4 sec
+      await new Promise((resolve) => setTimeout(resolve, 4000));
       let res = await makeRequest();
-      if (res?.data) {
-  setResult(res.data);
-} else {
-  alert("Invalid response from server");
-  return;
-}
+
+      // ✅ SAME SAFE HANDLING ON RETRY
+      setResult({
+        matched_skills: Array.isArray(res.data?.matched_skills)
+          ? res.data.matched_skills
+          : Array.isArray(res.data?.matched)
+          ? res.data.matched
+          : [],
+        skill_gaps: Array.isArray(res.data?.skill_gaps)
+          ? res.data.skill_gaps
+          : Array.isArray(res.data?.gaps)
+          ? res.data.gaps
+          : [],
+      });
 
     } catch (error2: any) {
       console.log("Second attempt failed:", error2);
 
-      // 🔥 REAL ERROR MESSAGE
       if (error2.response) {
         alert(
           "Backend error: " +
-          (error2.response.data?.detail || "Check backend logs")
+            (error2.response.data?.detail || "Check backend logs")
         );
       } else {
         alert(
-          "Server is waking up (free hosting). Please wait 20–30 seconds and click Analyze again."
+          "Server waking up... wait 20–30 sec and try again"
         );
       }
     }
   }
 
-  // 🔥 SCROLL AFTER SUCCESS
   setTimeout(() => {
     document
       .getElementById("results")
@@ -270,8 +285,8 @@ const handleAnalyze = async (e: any) => {
 </div>
 
   <button
-  type="button"   
-  onClick={(e) => handleAnalyze(e)}
+  type="button"   // ✅ ADD THIS LINE
+  onClick={handleAnalyze}
   className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl w-full font-semibold text-lg shadow-md hover:scale-[1.02] transition-transform"
 >
   {loading ? "Analyzing..." : "Analyze Skills"}
@@ -293,8 +308,7 @@ const handleAnalyze = async (e: any) => {
             </h2>
 
             <ul className="space-y-2">
-              {result?.matched_skills?.length > 0 &&
-  result.matched_skills.map((skill: string) => (
+              {(result?.matched_skills || []).map((skill: string) => (
     <li key={skill} className="bg-green-300 text-green-900 px-4 py-2 rounded-lg font-medium"
 >{skill}</li>
 ))}
@@ -311,7 +325,7 @@ const handleAnalyze = async (e: any) => {
             </h2>
 
             <ul className="space-y-3">
-              {result.skill_gaps.map((skill: string) => (
+              {(result?.skill_gaps || []).map((skill: string) => (
                 <li
                   key={skill}
                   className="bg-red-300 px-4 py-3 rounded-lg text-red-900"
