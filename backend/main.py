@@ -75,7 +75,7 @@ def generate(prompt):
     response = requests.post(
         "https://openrouter.ai/api/v1/chat/completions",
         headers={
-            "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
+            "Authorization": f"Bearer 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",
             "HTTP-Referer": "https://skillsense-ai-eta.vercel.app",
             "X-Title": "SkillSense AI"
         },
