@@ -31,15 +31,15 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://skillsense-ai-eta.vercel.app",  # your frontend URL
-        "http://localhost:3000",                 # for local testing
-    ],
+    allow_origins=["*"],  # ✅ TEMP: allow all to debug
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+@app.get("/test")
+def test():
+    return {"status": "working"}
 # ----------- MODELS -----------
 
 class InputData(BaseModel):
