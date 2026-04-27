@@ -138,13 +138,7 @@ def smart_match(required, candidate):
 @app.post("/analyze")
 def analyze(data: InputData):
     try:
-        # ❌ REMOVE AI dependency completely
-        # content = generate(prompt)
-
-        # ❌ REMOVE LLM parsing
-        # required_llm = ...
-        # candidate_llm = ...
-
+      
         # ✅ USE ONLY FALLBACK (GUARANTEED WORKING)
         required = fallback_extract(data.job_description)
         candidate = fallback_extract(data.resume)
@@ -166,8 +160,7 @@ def analyze(data: InputData):
 
     except Exception as e:
         return {"status": "error", "message": str(e)}
-# ----------- ASK -----------
-
+    
 @app.post("/ask")
 def ask(data: SkillRequest):
     prompt = f"Ask one practical interview question for {data.skill}"
