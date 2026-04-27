@@ -67,12 +67,8 @@ def extract_json(text):
     return match.group(0) if match else text
 
 def generate(prompt):
-    response = client.chat.completions.create(
-        model=MODEL,
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return extract_json(response.choices[0].message.content)
-# ----------- FALLBACK SKILLS -----------
+    # fallback: return prompt directly (no AI call)
+    return prompt
 
 COMMON_SKILLS = [
     "python","java","javascript","html","css",
@@ -142,61 +138,22 @@ def smart_match(required, candidate):
 @app.post("/analyze")
 def analyze(data: InputData):
     try:
-        prompt = f"""
-You are an expert recruiter.
+        # ❌ REMOVE AI dependency completely
+        # content = generate(prompt)
 
-Extract ALL skills from the job description and resume.
+        # ❌ REMOVE LLM parsing
+        # required_llm = ...
+        # candidate_llm = ...
 
-CRITICAL RULES:
-- Return ONLY canonical skill names (no sentences)
-- Map soft skills EXACTLY to:
-  communication
-  teamwork
-  leadership
-  problem solving
-  stakeholder management
-  time management
-- Map technical skills to standard names:
-  python, django, sql, postgresql, mongodb, api, aws, docker, etc.
+        # ✅ USE ONLY FALLBACK (GUARANTEED WORKING)
+        required = fallback_extract(data.job_description)
+        candidate = fallback_extract(data.resume)
 
-EXAMPLES:
-- "worked in teams" → teamwork
-- "collaborated with others" → teamwork
-- "led a team" → leadership
-- "mentored juniors" → leadership
-- "handled databases" → sql
-- "strong communication skills" → communication
-
-Return STRICT JSON:
-{{
-  "required_skills": [],
-  "candidate_skills": []
-}}
-
-Job Description:
-{data.job_description}
-
-Resume:
-{data.resume}
-"""
-
-        content = generate(prompt)
-
-        try:
-            parsed = json.loads(content)
-            required_llm = parsed.get("required_skills", [])
-            candidate_llm = parsed.get("candidate_skills", [])
-        except:
-            required_llm = []
-            candidate_llm = []
-
-        # fallback
-        required = required_llm + fallback_extract(data.job_description)
-        candidate = candidate_llm + fallback_extract(data.resume)
-
-        # clean everything
+        # ✅ CLEAN SKILLS
         required = clean_skills(required)
         candidate = clean_skills(candidate)
+
+        # ✅ MATCH PROPERLY
         matched, gaps = smart_match(required, candidate)
 
         return {
@@ -209,26 +166,6 @@ Resume:
 
     except Exception as e:
         return {"status": "error", "message": str(e)}
-
-# ----------- PDF ANALYZE -----------
-
-@app.post("/analyze-pdf")
-async def analyze_pdf(
-    resume: UploadFile = File(...),
-    job_description: UploadFile = File(...)
-):
-    try:
-        resume_text = extract_text_from_pdf(resume.file)
-        jd_text = extract_text_from_pdf(job_description.file)
-
-        return analyze(InputData(
-            resume=resume_text,
-            job_description=jd_text
-        ))
-
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
 # ----------- ASK -----------
 
 @app.post("/ask")
